@@ -1,0 +1,912 @@
+
+
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Metronom Strecken</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --metronom-blue: #004bae;
+            --metronom-yellow: #ffcf35;
+            --metronom-light-blue: #e6f0ff;
+        }
+        
+        body {
+            font-family: 'Fira Sans', sans-serif;
+            background-color: #f0f4f8;
+            background-image: linear-gradient(135deg, #f0f4f8 0%, #e6f0ff 100%);
+            min-height: 100vh;
+        }
+        
+        .metronom-blue {
+            background-color: var(--metronom-blue);
+        }
+        
+        .metronom-yellow {
+            background-color: var(--metronom-yellow);
+        }
+        
+        .text-metronom-blue {
+            color: var(--metronom-blue);
+        }
+        
+        .border-metronom-blue {
+            border-color: var(--metronom-blue);
+        }
+        
+        .border-metronom-yellow {
+            border-color: var(--metronom-yellow);
+        }
+        
+        .route-card {
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            border-radius: 12px;
+        }
+        
+        .route-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 6px;
+            height: 100%;
+            background-color: var(--metronom-blue);
+            transition: width 0.3s ease;
+        }
+        
+        .route-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 30px -10px rgba(0, 75, 174, 0.3);
+        }
+        
+        .route-card:hover::before {
+            width: 10px;
+        }
+        
+        .station-item {
+            transition: all 0.2s ease;
+            border: 1px solid transparent;
+        }
+        
+        .station-item:hover {
+            background-color: var(--metronom-light-blue);
+            border-color: var(--metronom-blue);
+            transform: translateX(5px);
+        }
+        
+        .station-item.active {
+            background-color: var(--metronom-light-blue);
+            border-color: var(--metronom-blue);
+        }
+        
+        .station-info {
+            max-height: 0;
+            overflow: hidden;
+            transition: all 0.3s ease;
+            opacity: 0;
+            border-left: 2px dashed var(--metronom-blue);
+        }
+        
+        .station-info.active {
+            max-height: 500px;
+            opacity: 1;
+        }
+        
+        .train-line {
+            position: relative;
+            padding-left: 30px;
+        }
+        
+        .train-line::before {
+            content: "";
+            position: absolute;
+            left: 15px;
+            top: 0;
+            bottom: 0;
+            width: 4px;
+            background-color: var(--metronom-blue);
+        }
+        
+        .station-dot {
+            position: absolute;
+            left: 15px;
+            width: 16px;
+            height: 16px;
+            transform: translateX(-6px);
+            border-radius: 50%;
+            background-color: var(--metronom-yellow);
+            border: 2px solid var(--metronom-blue);
+            z-index: 1;
+            box-shadow: 0 0 0 4px rgba(255, 207, 53, 0.3);
+        }
+        
+        .back-button {
+            transition: all 0.3s ease;
+        }
+        
+        .back-button:hover {
+            background-color: rgba(0, 75, 174, 0.1);
+        }
+        
+        .feature-icon {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            margin-right: 8px;
+            background-color: var(--metronom-blue);
+            color: white;
+        }
+        
+        .station-feature {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            margin-right: 6px;
+            background-color: rgba(0, 75, 174, 0.1);
+            color: var(--metronom-blue);
+            transition: all 0.2s ease;
+        }
+        
+        .station-feature:hover {
+            background-color: var(--metronom-blue);
+            color: white;
+            transform: scale(1.1);
+        }
+        
+        .route-badge {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-weight: bold;
+            font-size: 0.875rem;
+            color: white;
+            background-color: var(--metronom-blue);
+            box-shadow: 0 2px 5px rgba(0, 75, 174, 0.3);
+        }
+        
+        .route-info {
+            display: flex;
+            align-items: center;
+            font-size: 0.875rem;
+            color: #64748b;
+        }
+        
+        .route-info i {
+            margin-right: 0.5rem;
+            color: var(--metronom-blue);
+        }
+        
+        .route-info-divider {
+            width: 4px;
+            height: 4px;
+            border-radius: 50%;
+            background-color: #cbd5e1;
+            margin: 0 0.75rem;
+        }
+        
+        .route-arrow {
+            width: 36px;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            background-color: var(--metronom-light-blue);
+            color: var(--metronom-blue);
+            transition: all 0.3s ease;
+        }
+        
+        .route-card:hover .route-arrow {
+            background-color: var(--metronom-blue);
+            color: white;
+            transform: translateX(5px);
+        }
+        
+        @media (max-width: 640px) {
+            .container {
+                padding-left: 12px;
+                padding-right: 12px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container mx-auto px-4 py-6 max-w-4xl">
+        <header class="relative mb-16 bg-[#004bae] rounded-2xl shadow-lg p-6">
+            <div class="flex items-center justify-between relative z-10">
+                <div class="flex items-center">
+                    <div class="w-12 h-12 rounded-full bg-white flex items-center justify-center mr-4 shadow-md">
+                        <i class="fas fa-train text-2xl text-metronom-blue"></i>
+                    </div>
+                    <div>
+                        <h1 class="text-3xl font-bold text-white">Metronom Strecken</h1>
+                        <p class="text-blue-100 mt-1">Entdecke alle Strecken und Bahnhöfe des Metronom</p>
+                    </div>
+                </div>
+                <div class="hidden md:block">
+                    <div class="metronom-yellow h-3 w-24 rounded-full shadow-md"></div>
+                </div>
+            </div>
+        </header>
+        
+        <main>
+            <!-- Route Selection View -->
+            <div id="route-selection">
+                <!-- Removed the second box as requested -->
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="route-card bg-white p-5 shadow-md cursor-pointer" data-route="re3-re4">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <div class="flex items-center mb-3 space-x-2">
+                                    <span class="route-badge">RE 3</span>
+                                    <span class="route-badge">RE 4</span>
+                                </div>
+                                <h3 class="font-bold text-xl text-gray-800">Hamburg - Uelzen - Celle - Hannover</h3>
+                                <p class="text-gray-500 mt-1">Der Hanse-Express</p>
+                                
+                                <div class="flex items-center mt-4">
+                                    <div class="route-info">
+                                        <i class="fas fa-map-marker-alt"></i>
+                                        <span>13 Bahnhöfe</span>
+                                    </div>
+                                    <div class="route-info-divider"></div>
+                                    <div class="route-info">
+                                        <i class="fas fa-clock"></i>
+                                        <span>ca. 120 Min</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="route-arrow">
+                                <i class="fas fa-chevron-right"></i>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="route-card bg-white p-5 shadow-md cursor-pointer" data-route="re2">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <div class="flex items-center mb-3 space-x-2">
+                                    <span class="route-badge">RE 2</span>
+                                </div>
+                                <h3 class="font-bold text-xl text-gray-800">Uelzen - Lüneburg - Hamburg</h3>
+                                <p class="text-gray-500 mt-1">Der Elbe-Takt</p>
+                                
+                                <div class="flex items-center mt-4">
+                                    <div class="route-info">
+                                        <i class="fas fa-map-marker-alt"></i>
+                                        <span>9 Bahnhöfe</span>
+                                    </div>
+                                    <div class="route-info-divider"></div>
+                                    <div class="route-info">
+                                        <i class="fas fa-clock"></i>
+                                        <span>ca. 60 Min</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="route-arrow">
+                                <i class="fas fa-chevron-right"></i>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="route-card bg-white p-5 shadow-md cursor-pointer" data-route="re3">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <div class="flex items-center mb-3 space-x-2">
+                                    <span class="route-badge">RE 3</span>
+                                </div>
+                                <h3 class="font-bold text-xl text-gray-800">Hamburg - Lüneburg - Uelzen</h3>
+                                <p class="text-gray-500 mt-1">Der Heide-Cruiser</p>
+                                
+                                <div class="flex items-center mt-4">
+                                    <div class="route-info">
+                                        <i class="fas fa-map-marker-alt"></i>
+                                        <span>8 Bahnhöfe</span>
+                                    </div>
+                                    <div class="route-info-divider"></div>
+                                    <div class="route-info">
+                                        <i class="fas fa-clock"></i>
+                                        <span>ca. 65 Min</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="route-arrow">
+                                <i class="fas fa-chevron-right"></i>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="route-card bg-white p-5 shadow-md cursor-pointer" data-route="rb31">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <div class="flex items-center mb-3 space-x-2">
+                                    <span class="route-badge">RB 31</span>
+                                </div>
+                                <h3 class="font-bold text-xl text-gray-800">Hamburg - Lüneburg - Dannenberg</h3>
+                                <p class="text-gray-500 mt-1">Der Wendland-Express</p>
+                                
+                                <div class="flex items-center mt-4">
+                                    <div class="route-info">
+                                        <i class="fas fa-map-marker-alt"></i>
+                                        <span>12 Bahnhöfe</span>
+                                    </div>
+                                    <div class="route-info-divider"></div>
+                                    <div class="route-info">
+                                        <i class="fas fa-clock"></i>
+                                        <span>ca. 90 Min</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="route-arrow">
+                                <i class="fas fa-chevron-right"></i>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="route-card bg-white p-5 shadow-md cursor-pointer" data-route="rb41">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <div class="flex items-center mb-3 space-x-2">
+                                    <span class="route-badge">RB 41</span>
+                                </div>
+                                <h3 class="font-bold text-xl text-gray-800">Bremen - Rotenburg - Hamburg</h3>
+                                <p class="text-gray-500 mt-1">Der Hanseat</p>
+                                
+                                <div class="flex items-center mt-4">
+                                    <div class="route-info">
+                                        <i class="fas fa-map-marker-alt"></i>
+                                        <span>10 Bahnhöfe</span>
+                                    </div>
+                                    <div class="route-info-divider"></div>
+                                    <div class="route-info">
+                                        <i class="fas fa-clock"></i>
+                                        <span>ca. 80 Min</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="route-arrow">
+                                <i class="fas fa-chevron-right"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Route Detail View (initially hidden) -->
+            <div id="route-detail" class="hidden">
+                <div class="flex items-center mb-6">
+                    <button id="back-button" class="back-button flex items-center text-metronom-blue rounded-full p-2">
+                        <i class="fas fa-arrow-left mr-2"></i>
+                        <span>Zurück zur Übersicht</span>
+                    </button>
+                </div>
+                
+                <div class="bg-white rounded-lg shadow-md overflow-hidden">
+                    <div class="p-4 bg-[#004bae] text-white">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <div id="route-badges" class="flex items-center mb-2">
+                                    <!-- Will be filled dynamically -->
+                                </div>
+                                <h2 id="route-title" class="text-xl font-bold"></h2>
+                                <p id="route-subtitle" class="text-sm opacity-90"></p>
+                            </div>
+                            <div class="bg-white text-metronom-blue rounded-full p-2 h-10 w-10 flex items-center justify-center">
+                                <i class="fas fa-train"></i>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="p-4">
+                        <div class="flex items-center mb-4 text-sm text-gray-600">
+                            <div class="flex items-center mr-4">
+                                <i class="fas fa-map-marker-alt mr-2 text-metronom-blue"></i>
+                                <span id="station-count"></span>
+                            </div>
+                            <div class="flex items-center">
+                                <i class="fas fa-clock mr-2 text-metronom-blue"></i>
+                                <span id="route-duration"></span>
+                            </div>
+                        </div>
+                        
+                        <div class="train-line" id="stations-container">
+                            <!-- Will be filled dynamically -->
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="mt-4 bg-white rounded-lg shadow-md p-4">
+                    <h3 class="font-bold text-lg mb-3 text-metronom-blue">Legende</h3>
+                    <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                        <div class="flex items-center">
+                            <div class="feature-icon">
+                                <i class="fas fa-wifi text-xs"></i>
+                            </div>
+                            <span class="text-sm">WLAN verfügbar</span>
+                        </div>
+                        <div class="flex items-center">
+                            <div class="feature-icon">
+                                <i class="fas fa-wheelchair text-xs"></i>
+                            </div>
+                            <span class="text-sm">Barrierefrei</span>
+                        </div>
+                        <div class="flex items-center">
+                            <div class="feature-icon">
+                                <i class="fas fa-parking text-xs"></i>
+                            </div>
+                            <span class="text-sm">Parkplätze</span>
+                        </div>
+                        <div class="flex items-center">
+                            <div class="feature-icon">
+                                <i class="fas fa-bicycle text-xs"></i>
+                            </div>
+                            <span class="text-sm">Fahrradstellplätze</span>
+                        </div>
+                        <div class="flex items-center">
+                            <div class="feature-icon">
+                                <i class="fas fa-restroom text-xs"></i>
+                            </div>
+                            <span class="text-sm">WC vorhanden</span>
+                        </div>
+                        <div class="flex items-center">
+                            <div class="feature-icon">
+                                <i class="fas fa-store text-xs"></i>
+                            </div>
+                            <span class="text-sm">Einkaufsmöglichkeiten</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+        
+        <footer class="mt-12 py-4 text-center">
+            <div class="flex flex-col items-center">
+                <div class="flex items-center">
+                    <div class="w-8 h-8 rounded-full metronom-blue flex items-center justify-center mr-2">
+                        <i class="fas fa-train text-white text-sm"></i>
+                    </div>
+                    <span class="text-gray-700 font-medium">Metronom Eisenbahngesellschaft mbH</span>
+                </div>
+            </div>
+        </footer>
+    </div>
+
+    <script>
+        // Route data
+        const routeData = {
+            "re3-re4": {
+                title: "Hamburg - Uelzen - Celle - Hannover",
+                subtitle: "Der Hanse-Express",
+                badges: ["RE 3", "RE 4"],
+                stationCount: "13 Bahnhöfe",
+                duration: "ca. 120 Min",
+                stations: [
+                    {
+                        name: "Hamburg Hauptbahnhof",
+                        features: ["wifi", "wheelchair", "parking", "bicycle", "wc", "shopping"],
+                        description: "Zentraler Knotenpunkt mit Anschluss an S-Bahn, U-Bahn und Fernverkehr."
+                    },
+                    {
+                        name: "Hamburg-Harburg",
+                        features: ["wifi", "wheelchair", "parking", "bicycle", "wc"],
+                        description: "Wichtiger Umsteigebahnhof im Süden Hamburgs mit S-Bahn-Anschluss."
+                    },
+                    {
+                        name: "Lüneburg",
+                        features: ["wifi", "wheelchair", "parking", "bicycle", "wc", "shopping"],
+                        description: "Historischer Bahnhof mit direktem Zugang zur Altstadt."
+                    },
+                    {
+                        name: "Bienenbüttel",
+                        features: ["parking", "bicycle"],
+                        description: "Kleiner Bahnhof mit guter Anbindung an den Regionalverkehr."
+                    },
+                    {
+                        name: "Bad Bevensen",
+                        features: ["wifi", "wheelchair", "parking", "bicycle"],
+                        description: "Kurstadt mit direkter Anbindung an die Therme."
+                    },
+                    {
+                        name: "Uelzen",
+                        features: ["wifi", "wheelchair", "parking", "bicycle", "wc", "shopping"],
+                        description: "Bekannt für den von Friedensreich Hundertwasser gestalteten Bahnhof."
+                    },
+                    {
+                        name: "Suderburg",
+                        features: ["parking", "bicycle"],
+                        description: "Nahe der Hochschule Ostfalia gelegen."
+                    },
+                    {
+                        name: "Unterlüß",
+                        features: ["parking", "bicycle"],
+                        description: "Bahnhof im Herzen der Lüneburger Heide."
+                    },
+                    {
+                        name: "Eschede",
+                        features: ["parking", "bicycle"],
+                        description: "Regionaler Bahnhof mit Busanbindung."
+                    },
+                    {
+                        name: "Celle",
+                        features: ["wifi", "wheelchair", "parking", "bicycle", "wc"],
+                        description: "Historischer Bahnhof nahe der Altstadt mit Fachwerkgebäuden."
+                    },
+                    {
+                        name: "Großburgwedel",
+                        features: ["parking", "bicycle"],
+                        description: "Regionaler Bahnhof mit P+R Anlage."
+                    },
+                    {
+                        name: "Isernhagen",
+                        features: ["parking", "bicycle"],
+                        description: "Pendlerbahnhof am Stadtrand von Hannover."
+                    },
+                    {
+                        name: "Hannover Hauptbahnhof",
+                        features: ["wifi", "wheelchair", "parking", "bicycle", "wc", "shopping"],
+                        description: "Zentraler Verkehrsknotenpunkt mit ICE-Anschluss und Stadtbahn."
+                    }
+                ]
+            },
+            "re2": {
+                title: "Uelzen - Lüneburg - Hamburg",
+                subtitle: "Der Elbe-Takt",
+                badges: ["RE 2"],
+                stationCount: "9 Bahnhöfe",
+                duration: "ca. 60 Min",
+                stations: [
+                    {
+                        name: "Uelzen",
+                        features: ["wifi", "wheelchair", "parking", "bicycle", "wc", "shopping"],
+                        description: "Bekannt für den von Friedensreich Hundertwasser gestalteten Bahnhof."
+                    },
+                    {
+                        name: "Bad Bevensen",
+                        features: ["wifi", "wheelchair", "parking", "bicycle"],
+                        description: "Kurstadt mit direkter Anbindung an die Therme."
+                    },
+                    {
+                        name: "Bienenbüttel",
+                        features: ["parking", "bicycle"],
+                        description: "Kleiner Bahnhof mit guter Anbindung an den Regionalverkehr."
+                    },
+                    {
+                        name: "Lüneburg",
+                        features: ["wifi", "wheelchair", "parking", "bicycle", "wc", "shopping"],
+                        description: "Historischer Bahnhof mit direktem Zugang zur Altstadt."
+                    },
+                    {
+                        name: "Bardowick",
+                        features: ["parking", "bicycle"],
+                        description: "Älteste Stadt Norddeutschlands mit historischem Ortskern."
+                    },
+                    {
+                        name: "Winsen (Luhe)",
+                        features: ["wifi", "wheelchair", "parking", "bicycle"],
+                        description: "Kreisstadt mit Schloss und historischem Stadtkern."
+                    },
+                    {
+                        name: "Stelle",
+                        features: ["parking", "bicycle"],
+                        description: "Pendlerbahnhof mit guter Anbindung an Hamburg."
+                    },
+                    {
+                        name: "Hamburg-Harburg",
+                        features: ["wifi", "wheelchair", "parking", "bicycle", "wc"],
+                        description: "Wichtiger Umsteigebahnhof im Süden Hamburgs mit S-Bahn-Anschluss."
+                    },
+                    {
+                        name: "Hamburg Hauptbahnhof",
+                        features: ["wifi", "wheelchair", "parking", "bicycle", "wc", "shopping"],
+                        description: "Zentraler Knotenpunkt mit Anschluss an S-Bahn, U-Bahn und Fernverkehr."
+                    }
+                ]
+            },
+            "re3": {
+                title: "Hamburg - Lüneburg - Uelzen",
+                subtitle: "Der Heide-Cruiser",
+                badges: ["RE 3"],
+                stationCount: "8 Bahnhöfe",
+                duration: "ca. 65 Min",
+                stations: [
+                    {
+                        name: "Hamburg Hauptbahnhof",
+                        features: ["wifi", "wheelchair", "parking", "bicycle", "wc", "shopping"],
+                        description: "Zentraler Knotenpunkt mit Anschluss an S-Bahn, U-Bahn und Fernverkehr."
+                    },
+                    {
+                        name: "Hamburg-Harburg",
+                        features: ["wifi", "wheelchair", "parking", "bicycle", "wc"],
+                        description: "Wichtiger Umsteigebahnhof im Süden Hamburgs mit S-Bahn-Anschluss."
+                    },
+                    {
+                        name: "Meckelfeld",
+                        features: ["parking", "bicycle"],
+                        description: "Pendlerbahnhof mit P+R Anlage."
+                    },
+                    {
+                        name: "Winsen (Luhe)",
+                        features: ["wifi", "wheelchair", "parking", "bicycle"],
+                        description: "Kreisstadt mit Schloss und historischem Stadtkern."
+                    },
+                    {
+                        name: "Radbruch",
+                        features: ["parking", "bicycle"],
+                        description: "Kleiner Bahnhof in ländlicher Umgebung."
+                    },
+                    {
+                        name: "Bardowick",
+                        features: ["parking", "bicycle"],
+                        description: "Älteste Stadt Norddeutschlands mit historischem Ortskern."
+                    },
+                    {
+                        name: "Lüneburg",
+                        features: ["wifi", "wheelchair", "parking", "bicycle", "wc", "shopping"],
+                        description: "Historischer Bahnhof mit direktem Zugang zur Altstadt."
+                    },
+                    {
+                        name: "Uelzen",
+                        features: ["wifi", "wheelchair", "parking", "bicycle", "wc", "shopping"],
+                        description: "Bekannt für den von Friedensreich Hundertwasser gestalteten Bahnhof."
+                    }
+                ]
+            },
+            "rb31": {
+                title: "Hamburg - Lüneburg - Dannenberg",
+                subtitle: "Der Wendland-Express",
+                badges: ["RB 31"],
+                stationCount: "12 Bahnhöfe",
+                duration: "ca. 90 Min",
+                stations: [
+                    {
+                        name: "Hamburg Hauptbahnhof",
+                        features: ["wifi", "wheelchair", "parking", "bicycle", "wc", "shopping"],
+                        description: "Zentraler Knotenpunkt mit Anschluss an S-Bahn, U-Bahn und Fernverkehr."
+                    },
+                    {
+                        name: "Hamburg-Harburg",
+                        features: ["wifi", "wheelchair", "parking", "bicycle", "wc"],
+                        description: "Wichtiger Umsteigebahnhof im Süden Hamburgs mit S-Bahn-Anschluss."
+                    },
+                    {
+                        name: "Winsen (Luhe)",
+                        features: ["wifi", "wheelchair", "parking", "bicycle"],
+                        description: "Kreisstadt mit Schloss und historischem Stadtkern."
+                    },
+                    {
+                        name: "Lüneburg",
+                        features: ["wifi", "wheelchair", "parking", "bicycle", "wc", "shopping"],
+                        description: "Historischer Bahnhof mit direktem Zugang zur Altstadt."
+                    },
+                    {
+                        name: "Barendorf",
+                        features: ["parking", "bicycle"],
+                        description: "Kleiner Bahnhof in ländlicher Umgebung."
+                    },
+                    {
+                        name: "Vastorf",
+                        features: ["parking", "bicycle"],
+                        description: "Haltepunkt mit Busanbindung."
+                    },
+                    {
+                        name: "Dahlenburg",
+                        features: ["parking", "bicycle"],
+                        description: "Regionaler Bahnhof mit historischem Gebäude."
+                    },
+                    {
+                        name: "Göhrde",
+                        features: ["parking", "bicycle"],
+                        description: "Bahnhof am Rande des Naturparks Elbhöhen-Wendland."
+                    },
+                    {
+                        name: "Breese",
+                        features: ["parking", "bicycle"],
+                        description: "Kleiner Haltepunkt in ländlicher Region."
+                    },
+                    {
+                        name: "Jameln",
+                        features: ["parking", "bicycle"],
+                        description: "Haltepunkt im Wendland mit Busanbindung."
+                    },
+                    {
+                        name: "Dannenberg Ost",
+                        features: ["wifi", "wheelchair", "parking", "bicycle"],
+                        description: "Bahnhof im Zentrum von Dannenberg."
+                    },
+                    {
+                        name: "Dannenberg Stadt",
+                        features: ["wifi", "wheelchair", "parking", "bicycle"],
+                        description: "Endbahnhof der Strecke im Wendland."
+                    }
+                ]
+            },
+            "rb41": {
+                title: "Bremen - Rotenburg - Hamburg",
+                subtitle: "Der Hanseat",
+                badges: ["RB 41"],
+                stationCount: "10 Bahnhöfe",
+                duration: "ca. 80 Min",
+                stations: [
+                    {
+                        name: "Bremen Hauptbahnhof",
+                        features: ["wifi", "wheelchair", "parking", "bicycle", "wc", "shopping"],
+                        description: "Zentraler Verkehrsknotenpunkt mit ICE-Anschluss und Straßenbahn."
+                    },
+                    {
+                        name: "Oberneuland",
+                        features: ["parking", "bicycle"],
+                        description: "Stadtteilbahnhof im Nordosten Bremens."
+                    },
+                    {
+                        name: "Ottersberg",
+                        features: ["parking", "bicycle"],
+                        description: "Regionaler Bahnhof mit Busanbindung."
+                    },
+                    {
+                        name: "Rotenburg (Wümme)",
+                        features: ["wifi", "wheelchair", "parking", "bicycle", "wc"],
+                        description: "Kreisstadt mit historischem Stadtkern und Busbahnhof am Bahnhof."
+                    },
+                    {
+                        name: "Scheeßel",
+                        features: ["parking", "bicycle"],
+                        description: "Bekannt durch das Hurricane Festival, mit P+R Anlage."
+                    },
+                    {
+                        name: "Tostedt",
+                        features: ["parking", "bicycle"],
+                        description: "Regionaler Bahnhof mit Busanbindung."
+                    },
+                    {
+                        name: "Buchholz (Nordheide)",
+                        features: ["wifi", "wheelchair", "parking", "bicycle", "wc"],
+                        description: "Wichtiger Umsteigebahnhof mit Anschluss an weitere Regionallinien."
+                    },
+                    {
+                        name: "Klecken",
+                        features: ["parking", "bicycle"],
+                        description: "Pendlerbahnhof mit P+R Anlage."
+                    },
+                    {
+                        name: "Hamburg-Harburg",
+                        features: ["wifi", "wheelchair", "parking", "bicycle", "wc"],
+                        description: "Wichtiger Umsteigebahnhof im Süden Hamburgs mit S-Bahn-Anschluss."
+                    },
+                    {
+                        name: "Hamburg Hauptbahnhof",
+                        features: ["wifi", "wheelchair", "parking", "bicycle", "wc", "shopping"],
+                        description: "Zentraler Knotenpunkt mit Anschluss an S-Bahn, U-Bahn und Fernverkehr."
+                    }
+                ]
+            }
+        };
+        
+        // Feature icons mapping
+        const featureIcons = {
+            "wifi": "fa-wifi",
+            "wheelchair": "fa-wheelchair",
+            "parking": "fa-parking",
+            "bicycle": "fa-bicycle",
+            "wc": "fa-restroom",
+            "shopping": "fa-store"
+        };
+        
+        // DOM elements
+        const routeSelection = document.getElementById('route-selection');
+        const routeDetail = document.getElementById('route-detail');
+        const backButton = document.getElementById('back-button');
+        const routeBadges = document.getElementById('route-badges');
+        const routeTitle = document.getElementById('route-title');
+        const routeSubtitle = document.getElementById('route-subtitle');
+        const stationCount = document.getElementById('station-count');
+        const routeDuration = document.getElementById('route-duration');
+        const stationsContainer = document.getElementById('stations-container');
+        
+        // Add event listeners to route cards
+        document.querySelectorAll('.route-card').forEach(card => {
+            card.addEventListener('click', () => {
+                const routeId = card.getAttribute('data-route');
+                showRouteDetail(routeId);
+            });
+        });
+        
+        // Back button event listener
+        backButton.addEventListener('click', () => {
+            routeDetail.classList.add('hidden');
+            routeSelection.classList.remove('hidden');
+        });
+        
+        // Function to show route detail
+        function showRouteDetail(routeId) {
+            const route = routeData[routeId];
+            
+            // Update route information
+            routeBadges.innerHTML = '';
+            route.badges.forEach(badge => {
+                routeBadges.innerHTML += `<span class="inline-block px-2 py-1 rounded bg-white text-metronom-blue text-sm font-bold mr-2">${badge}</span>`;
+            });
+            
+            routeTitle.textContent = route.title;
+            routeSubtitle.textContent = route.subtitle;
+            stationCount.textContent = route.stationCount;
+            routeDuration.textContent = route.duration;
+            
+            // Generate stations list
+            stationsContainer.innerHTML = '';
+            route.stations.forEach((station, index) => {
+                const isLast = index === route.stations.length - 1;
+                
+                const stationElement = document.createElement('div');
+                stationElement.className = 'relative';
+                
+                const stationContent = `
+                    <div class="station-dot" style="top: 24px;"></div>
+                    <div class="station-item p-4 pl-6 rounded-lg cursor-pointer mb-3 relative shadow-sm border border-gray-100 hover:shadow-md transition-all duration-300">
+                        <div class="flex justify-between items-center">
+                            <h4 class="font-bold text-metronom-blue">${station.name}</h4>
+                            <div class="text-metronom-blue">
+                                <i class="fas fa-chevron-down transition-transform duration-300"></i>
+                            </div>
+                        </div>
+                        <div class="flex flex-wrap mt-2">
+                            ${station.features.map(feature => `
+                                <div class="station-feature mb-1" title="${getFeatureTitle(feature)}">
+                                    <i class="fas ${featureIcons[feature]}"></i>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                    <div class="station-info bg-gray-50 rounded-lg p-4 mb-4 ml-6 transition-all duration-300 shadow-inner">
+                        <p class="text-gray-700">${station.description}</p>
+                    </div>
+                `;
+                
+                stationElement.innerHTML = stationContent;
+                stationsContainer.appendChild(stationElement);
+                
+                // Add click event to toggle station info
+                const stationItem = stationElement.querySelector('.station-item');
+                const stationInfo = stationElement.querySelector('.station-info');
+                const chevron = stationElement.querySelector('.fa-chevron-down');
+                
+                stationItem.addEventListener('click', () => {
+                    stationInfo.classList.toggle('active');
+                    stationItem.classList.toggle('active');
+                    chevron.style.transform = stationInfo.classList.contains('active') ? 'rotate(180deg)' : 'rotate(0)';
+                });
+            });
+            
+            // Show route detail view
+            routeSelection.classList.add('hidden');
+            routeDetail.classList.remove('hidden');
+        }
+        
+        // Helper function to get feature title
+        function getFeatureTitle(feature) {
+            const titles = {
+                "wifi": "WLAN verfügbar",
+                "wheelchair": "Barrierefrei",
+                "parking": "Parkplätze",
+                "bicycle": "Fahrradstellplätze",
+                "wc": "WC vorhanden",
+                "shopping": "Einkaufsmöglichkeiten"
+            };
+            return titles[feature] || feature;
+        }
+    </script>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'951af9a19071bbcb',t:'MTc1MDI1MTY4NC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>
